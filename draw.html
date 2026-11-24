@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>さかなを かこう</title>
+<style>
+  :root {
+    --bg: #dff3ff;
+    --panel: #ffffff;
+    --ink: #2b3a55;
+    --go: #ff7a3d;
+    --go-dark: #e05a1c;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--ink);
+    font-family: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    overscroll-behavior: none; touch-action: manipulation;
+  }
+  body { position: fixed; inset: 0; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
+
+  #shapes { display: flex; gap: 10px; justify-content: center; padding: 10px 10px 6px; flex: 0 0 auto; }
+  .shape {
+    background: var(--panel); border-radius: 18px; padding: 6px 12px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    box-shadow: 0 3px 0 #b9d8ea; font-size: 17px; font-weight: bold; min-width: 92px;
+    border: 4px solid transparent;
+  }
+  .shape canvas { height: 46px; width: auto; }
+  .shape.on { border-color: var(--go); background: #fff4e8; }
+
+  #main { flex: 1 1 auto; display: flex; gap: 10px; padding: 4px 10px 10px; min-height: 0; }
+  #palette, #tools { flex: 0 0 auto; display: grid; gap: 8px; align-content: center; }
+  #palette { grid-template-columns: repeat(2, 54px); }
+  .color {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 5px solid #fff; box-shadow: 0 2px 0 #b9d8ea, inset 0 -4px 0 rgba(0,0,0,.12);
+  }
+  .color.on { outline: 5px solid var(--ink); outline-offset: 1px; }
+
+  #stageWrap { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; }
+  #stage { position: relative; border-radius: 24px; overflow: hidden; background: #f2faff; box-shadow: 0 4px 0 #b9d8ea; touch-action: none; }
+  #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  #tools { grid-template-columns: repeat(2, 64px); }
+  .tool {
+    width: 64px; height: 64px; border-radius: 18px; background: var(--panel);
+    box-shadow: 0 3px 0 #b9d8ea; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; gap: 2px; border: 4px solid transparent;
+  }
+  .tool svg { width: 30px; height: 30px; }
+  .tool.on { border-color: var(--go); background: #fff4e8; }
+  .dot { border-radius: 50%; background: var(--ink); }
+  #done {
+    grid-column: 1 / -1; height: 84px; border-radius: 24px;
+    background: var(--go); color: #fff; font-size: 26px; font-weight: bold; white-space: nowrap;
+    box-shadow: 0 6px 0 var(--go-dark);
+  }
+  #done:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--go-dark); }
+  #done:disabled { background: #c9d3dc; box-shadow: 0 6px 0 #a9b5c0; color: #f4f6f8; }
+
+  #sent {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column;
+    background: rgba(40, 140, 210, .92); color: #fff; z-index: 10; overflow: hidden;
+  }
+  #sent.show { display: flex; }
+  #sent .msg { font-size: clamp(30px, 6vw, 56px); font-weight: bold; text-shadow: 0 4px 0 rgba(0,0,0,.15); text-align: center; }
+  #sent img { width: min(46vw, 420px); margin: 24px 0; }
+  #sent.go img { animation: swimAway 1.6s ease-in .4s forwards; }
+  @keyframes swimAway {
+    0% { transform: translateX(0) rotate(0); }
+    25% { transform: translateX(-4vw) rotate(-4deg); }
+    100% { transform: translateX(120vw) rotate(6deg); }
+  }
+  #sent .retry { display: none; margin-top: 18px; background: #fff; color: var(--ink); font-size: 24px; font-weight: bold; padding: 14px 30px; border-radius: 20px; }
+  #sent.fail .retry { display: block; }
+
+  #status { position: fixed; right: 10px; bottom: 6px; font-size: 11px; opacity: .55; pointer-events: none; }
+
+  @media (orientation: portrait) {
+    #main { flex-direction: column; }
+    #palette { grid-template-columns: repeat(6, 50px); justify-content: center; }
+    .color { width: 50px; height: 50px; }
+    #tools { grid-template-columns: repeat(7, 64px); justify-content: center; }
+    #done { height: 72px; }
+    #shapes { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+  <div id="shapes"></div>
+  <div id="main">
+    <div id="palette"></div>
+    <div id="stageWrap">
+      <div id="stage">
+        <canvas id="guide"></canvas>
+        <canvas id="paint"></canvas>
+        <canvas id="over"></canvas>
+      </div>
+    </div>
+    <div id="tools">
+      <button class="tool size" data-size="10" aria-label="ほそい"><span class="dot" style="width:10px;height:10px"></span>ほそい</button>
+      <button class="tool size" data-size="24" aria-label="ふつう"><span class="dot" style="width:20px;height:20px"></span>ふつう</button>
+      <button class="tool size" data-size="48" aria-label="ふとい"><span class="dot" style="width:32px;height:32px"></span>ふとい</button>
+      <button class="tool" id="fill" aria-label="ぬる">
+        <svg viewBox="0 0 32 32"><path d="M7 14 L16 5 L26 15 L17 24 Z" fill="#fff" stroke="#2b3a55" stroke-width="2.5" stroke-linejoin="round"/><path d="M7 14 L26 15 L17 24 Z" fill="currentColor" class="fillc"/><path d="M27 20 q3 5 0 7 q-3 -2 0 -7z" fill="currentColor" class="fillc"/></svg>ぬる
+      </button>
+      <button class="tool" id="eraser" aria-label="けしゴム">
+        <svg viewBox="0 0 32 32"><rect x="6" y="9" width="20" height="13" rx="3" transform="rotate(-30 16 16)" fill="#ffb3c1" stroke="#2b3a55" stroke-width="2.5"/></svg>けす
+      </button>
+      <button class="tool" id="undo" aria-label="もどる">
+        <svg viewBox="0 0 32 32"><path d="M11 9 L5 15 L11 21" fill="none" stroke="#2b3a55" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 15 H19 a7 7 0 0 1 0 14 H14" fill="none" stroke="#2b3a55" stroke-width="3.5" stroke-linecap="round"/></svg>もどる
+      </button>
+      <button class="tool" id="clear" aria-label="ぜんぶけす">
+        <svg viewBox="0 0 32 32"><path d="M8 10 H24 L22 28 H10 Z" fill="#e6eef5" stroke="#2b3a55" stroke-width="2.5" stroke-linejoin="round"/><path d="M6 10 H26 M13 6 H19" stroke="#2b3a55" stroke-width="3" stroke-linecap="round"/></svg>ぜんぶ
+      </button>
+      <button id="done" disabled>できた！</button>
+    </div>
+  </div>
+
+  <div id="sent">
+    <div class="msg" id="sentMsg">うみに いったよ！</div>
+    <img id="sentImg" alt="">
+    <button class="retry" id="retry">もういちど おくる</button>
+  </div>
+  <div id="status"></div>
+
+<script type="module" src="js/draw.js"></script>
+</body>
+</html>

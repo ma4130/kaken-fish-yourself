@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>みんなの うみ</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a5c8f; }
+  body { font-family: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif; user-select: none; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  body.idle, body.idle canvas { cursor: none; }
+  #menu {
+    position: fixed; right: 14px; bottom: 14px; display: flex; gap: 8px;
+    transition: opacity .4s; opacity: 1;
+  }
+  body.idle #menu { opacity: 0; pointer-events: none; }
+  #menu button {
+    font: inherit; font-size: 14px; font-weight: bold; color: #0a3d5e;
+    background: rgba(255,255,255,.85); border: 0; border-radius: 12px; padding: 8px 14px; cursor: pointer;
+  }
+  #msg {
+    position: fixed; left: 50%; top: 18px; transform: translateX(-50%);
+    background: rgba(255,255,255,.9); color: #0a3d5e; padding: 10px 18px; border-radius: 14px;
+    font-size: 15px; font-weight: bold; display: none; max-width: 90vw; text-align: center;
+  }
+</style>
+</head>
+<body>
+  <canvas id="sea"></canvas>
+  <div id="menu">
+    <button id="btnDraw">かく画面をひらく</button>
+    <button id="btnEmpty">うみを からにする</button>
+    <button id="btnFull">ぜんがめん</button>
+  </div>
+  <div id="msg"></div>
+<script type="module" src="js/screen.js"></script>
+</body>
+</html>
