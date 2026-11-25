@@ -6,6 +6,9 @@
   https://ma4130.github.io/kaken-fish-yourself/
 - **かく画面（タブレット）** … `draw.html`  
   https://ma4130.github.io/kaken-fish-yourself/draw.html
+- **これまでの え** … `gallery.html`（うつす画面の右下ボタンからも開ける）  
+  https://ma4130.github.io/kaken-fish-yourself/gallery.html  
+  かいた絵を 日ごとに あたらしい順で ならべる。タップで大きく見て1まいずつ保存、日ごと・ぜんぶを zip で保存できる。「うみを からにする」の前の絵も ぜんぶ見られる。
 
 ## つかいかた
 

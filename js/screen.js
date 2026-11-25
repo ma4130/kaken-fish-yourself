@@ -403,6 +403,7 @@ createNet({ onError: (e) => showMsg('つうしん エラー: ' + e.message) })
 canvas.addEventListener('pointerdown', (e) => { feed(e.clientX, e.clientY); });
 const qs = location.search;
 document.getElementById('btnDraw').onclick = () => window.open('draw.html' + qs, '_blank');
+document.getElementById('btnGallery').onclick = () => window.open('gallery.html' + qs.replace(/([?&])test(&|$)/, '$1').replace(/[?&]$/, ''), '_blank');
 document.getElementById('btnEmpty').onclick = () => {
   if (!confirm('いまいる さかなを ぜんぶ うみから かえしますか？（つぎに かいた さかなから でてきます）')) return;
   since = Date.now();

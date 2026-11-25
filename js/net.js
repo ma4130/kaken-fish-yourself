@@ -30,6 +30,16 @@ async function firestoreNet(room, onError) {
       (s) => { const list = []; s.forEach((d) => list.push({ id: d.id, ...d.data() })); cb(list); },
       onError,
     ),
+    // これまでの絵：あたらしい順に n まい。before（t の値）より前から
+    listFish: async (n, before = null) => {
+      const q = before == null
+        ? fs.query(fish, fs.orderBy('t', 'desc'), fs.limit(n))
+        : fs.query(fish, fs.orderBy('t', 'desc'), fs.startAfter(before), fs.limit(n));
+      const s = await fs.getDocs(q);
+      const list = [];
+      s.forEach((d) => list.push({ id: d.id, ...d.data() }));
+      return list;
+    },
   };
 }
 
@@ -56,5 +66,6 @@ function localNet(room) {
       return doc;
     },
     onFish: (max, cb) => { cbs.push({ max, cb }); setTimeout(fire, 0); return () => {}; },
+    listFish: async (n, before = null) => read().filter((d) => before == null || d.t < before).slice(0, n),
   };
 }

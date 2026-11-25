@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>これまでの え</title>
+<style>
+  :root {
+    --bg: #eaf6fd;
+    --card: #ffffff;
+    --ink: #2b3a55;
+    --sub: #6a7a92;
+    --line: #cfe3f0;
+    --accent: #1f8fd6;
+    --go: #ff7a3d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif; padding: 0 16px 40px; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  header {
+    position: sticky; top: 0; z-index: 5; margin: 0 -16px; padding: 12px 16px;
+    background: rgba(234, 246, 253, .94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  }
+  h1 { margin: 0; font-size: 22px; }
+  .meta { color: var(--sub); font-size: 14px; }
+  .spacer { flex: 1; }
+  .room { display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--sub); white-space: nowrap; }
+  .room input { width: 9em; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .btn {
+    border: 0; border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: bold;
+    background: #fff; box-shadow: 0 2px 0 var(--line); white-space: nowrap;
+  }
+  .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 2px 0 #176fa8; }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  .day { margin-top: 26px; }
+  .dayHead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  .dayHead h2 { margin: 0; font-size: 18px; }
+  .dayHead .count { color: var(--sub); font-size: 14px; }
+  .dayHead .btn { margin-left: auto; padding: 6px 12px; font-size: 13px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tile {
+    background: var(--card); border: 0; border-radius: 14px; padding: 8px 8px 6px; box-shadow: 0 2px 0 var(--line);
+    display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0;
+  }
+  .tile img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+  .tile .time { font-size: 12px; color: var(--sub); }
+  .tile:focus-visible { outline: 3px solid var(--accent); }
+
+  #more { display: block; margin: 28px auto 0; }
+  #more[hidden] { display: none; }
+  #empty, #err { text-align: center; color: var(--sub); margin-top: 60px; display: none; }
+  #err { color: #c0392b; }
+
+  #view {
+    position: fixed; inset: 0; z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(10, 60, 100, .92); color: #fff; padding: 16px;
+  }
+  #view.show { display: flex; }
+  #view img { max-width: min(92vw, 900px); max-height: 70vh; object-fit: contain; background: rgba(255,255,255,.06); border-radius: 16px; }
+  #view .info { margin: 14px 0; font-size: 16px; }
+  #view .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #view .btn { background: #fff; color: var(--ink); box-shadow: none; }
+  #view .nav {
+    position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border-radius: 50%;
+    border: 0; background: rgba(255,255,255,.2); color: #fff; font-size: 26px;
+  }
+  #prev { left: 12px; } #next { right: 12px; }
+  #close { position: absolute; top: 12px; right: 12px; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 30;
+    background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; display: none;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>これまでの え</h1>
+    <span class="meta" id="meta">よみこみ中…</span>
+    <span class="spacer"></span>
+    <form class="room" id="roomForm">うみ <input id="roomInput" aria-label="うみの名前"> <button class="btn" type="submit">かえる</button></form>
+    <button class="btn primary" id="saveAll">ぜんぶ ほぞん（zip）</button>
+  </header>
+
+  <main id="list"></main>
+  <p id="empty">まだ え がありません。</p>
+  <p id="err"></p>
+  <button class="btn" id="more" hidden>もっと見る</button>
+
+  <div id="view" role="dialog" aria-modal="true" aria-label="えを大きく見る">
+    <button class="btn" id="close">とじる ✕</button>
+    <button class="nav" id="prev" aria-label="ひとつ新しい え">‹</button>
+    <img id="viewImg" alt="">
+    <div class="info" id="viewInfo"></div>
+    <div class="row">
+      <button class="btn" id="viewSave">この え を ほぞん</button>
+    </div>
+    <button class="nav" id="next" aria-label="ひとつ古い え">›</button>
+  </div>
+  <div id="toast"></div>
+
+<script type="module" src="js/gallery.js"></script>
+</body>
+</html>
