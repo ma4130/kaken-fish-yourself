@@ -38,7 +38,7 @@ createNet({ onError: (e) => status('つうしん エラー: ' + e.message) })
   .catch((e) => status('つうしん できません: ' + e.message));
 
 // ---------- かたち ----------
-function setShape(shape, { keepUndo = false } = {}) {
+function setShape(shape) {
   st.shape = shape;
   mctx.clearRect(0, 0, mask.width, mask.height);
   fillShape(mctx, shape, '#fff', S);
@@ -46,9 +46,15 @@ function setShape(shape, { keepUndo = false } = {}) {
   gctx.drawImage(mask, 0, 0);
   octx.clearRect(0, 0, over.width, over.height);
   drawOutline(octx, shape, S, OUTLINE);
-  remask(0, 0, paint.width, paint.height);
-  if (!keepUndo) st.painted = hasInk();
   document.querySelectorAll('.shape').forEach((b) => b.classList.toggle('on', b.dataset.id === shape.id));
+}
+
+function selectShape(shape) {
+  if (st.shape === shape) return;
+  pushUndo();
+  pctx.clearRect(0, 0, paint.width, paint.height);
+  st.painted = false;
+  setShape(shape);
   refresh();
 }
 
@@ -76,7 +82,7 @@ for (const s of SHAPES) {
   b.dataset.id = s.id;
   b.appendChild(shapeIcon(s, 110));
   b.append(s.name);
-  b.onclick = () => { if (st.shape !== s) { pushUndo(); setShape(s, { keepUndo: true }); st.painted = hasInk(); refresh(); } };
+  b.onclick = () => selectShape(s);
   $('shapes').appendChild(b);
 }
 for (const c of COLORS) {
@@ -124,7 +130,7 @@ function pushUndo() {
 function undo() {
   const u = st.undo.pop();
   if (!u) return;
-  if (u.shape !== st.shape) setShape(u.shape, { keepUndo: true });
+  if (u.shape !== st.shape) setShape(u.shape);
   pctx.putImageData(u.img, 0, 0);
   st.painted = hasInk();
   refresh();
@@ -305,12 +311,13 @@ document.addEventListener('contextmenu', (e) => e.preventDefault());
 document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
 setShape(SHAPES[0]);
+refresh();
 fit();
 
 if (params.has('test')) {
   window.__draw = {
     st, SHAPES,
-    setShape: (id) => setShape(shapeById(id)),
+    setShape: (id) => selectShape(shapeById(id)),
     stroke: (pts, color = st.color, size = st.size) => {
       st.color = color; st.size = size; st.tool = 'pen';
       pushUndo();
