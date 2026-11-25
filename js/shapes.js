@@ -26,14 +26,46 @@ function spikes(cx, cy, r0, r1, n, skip) {
   return out;
 }
 
-function tentacle(c, curl) {
-  return draw((p) => {
-    p.moveTo(c - 27, 250);
-    p.quadraticCurveTo(c - 40 * curl - 10, 380, c - 6 * curl, 455);
-    p.quadraticCurveTo(c + 18 * curl, 490, c + 32 * curl, 458);
-    p.quadraticCurveTo(c + 8 * curl, 385, c + 27, 250);
-    p.closePath();
-  });
+function octopus(p) {
+  p.moveTo(232, 246);
+  p.bezierCurveTo(197, 142, 277, 48, 400, 48);
+  p.bezierCurveTo(523, 48, 603, 142, 568, 246);
+
+  // まるい先の足を、右から左へ 8 本つなげる。
+  p.bezierCurveTo(583, 275, 615, 308, 642, 299);
+  p.bezierCurveTo(660, 293, 651, 271, 672, 269);
+  p.bezierCurveTo(695, 267, 702, 304, 680, 324);
+  p.bezierCurveTo(647, 355, 591, 343, 548, 313);
+
+  p.bezierCurveTo(570, 347, 598, 370, 619, 366);
+  p.bezierCurveTo(642, 359, 657, 378, 645, 395);
+  p.bezierCurveTo(627, 421, 568, 406, 512, 342);
+
+  p.bezierCurveTo(530, 378, 546, 414, 566, 414);
+  p.bezierCurveTo(588, 414, 595, 437, 574, 447);
+  p.bezierCurveTo(536, 465, 492, 427, 465, 360);
+
+  p.bezierCurveTo(471, 398, 471, 432, 485, 439);
+  p.bezierCurveTo(502, 453, 487, 475, 463, 470);
+  p.bezierCurveTo(428, 464, 411, 426, 400, 374);
+
+  p.bezierCurveTo(389, 426, 372, 464, 337, 470);
+  p.bezierCurveTo(313, 475, 298, 453, 315, 439);
+  p.bezierCurveTo(329, 432, 329, 398, 335, 360);
+
+  p.bezierCurveTo(308, 427, 264, 465, 226, 447);
+  p.bezierCurveTo(205, 437, 212, 414, 234, 414);
+  p.bezierCurveTo(254, 414, 270, 378, 288, 342);
+
+  p.bezierCurveTo(232, 406, 173, 421, 155, 395);
+  p.bezierCurveTo(143, 378, 158, 359, 181, 366);
+  p.bezierCurveTo(202, 370, 230, 347, 252, 313);
+
+  p.bezierCurveTo(209, 343, 153, 355, 120, 324);
+  p.bezierCurveTo(98, 304, 105, 267, 128, 269);
+  p.bezierCurveTo(149, 271, 140, 293, 158, 299);
+  p.bezierCurveTo(185, 308, 217, 275, 232, 246);
+  p.closePath();
 }
 
 function ribbon(x) {
@@ -85,11 +117,7 @@ export const SHAPES = [
   {
     id: 'tako', name: 'タコ', color: '#ff8fa3',
     motion: 'float', amp: 0.06, speed: 0.8, size: 0.9, pulse: 2.3,
-    parts: [
-      ellipse(400, 185, 165, 150),
-      tentacle(270, -1), tentacle(322, 1), tentacle(374, -1),
-      tentacle(426, 1), tentacle(478, -1), tentacle(530, 1),
-    ],
+    parts: [octopus],
     eyes: [[340, 200, 19], [460, 200, 19]],
   },
   {
